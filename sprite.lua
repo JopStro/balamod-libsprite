@@ -1,7 +1,3 @@
--- ----------------------------------------------
--- ------------MOD CORE API SPRITE---------------
-
-
 -- BASE REFERENCES FROM MAIN GAME
 -- G.animation_atli = {
 --     {name = "blind_chips", path = "resources/textures/"..self.SETTINGS.GRAPHICS.texture_scaling.."x/BlindChips.png",px=34,py=34, frames = 21},
@@ -29,10 +25,10 @@
 --     {name = "localthunk_logo", path = "resources/textures/1x/localthunk-logo.png", px=1390,py=560}
 -- }
 
-SMODS.Sprites = {}
-SMODS.Sprite = {name = "", top_lpath = "", path = "", px = 0, py = 0, type = "", frames = 0}
+BUTIL.Sprites = {}
+BUTIL.Sprite = {name = "", top_lpath = "", path = "", px = 0, py = 0, type = "", frames = 0}
 
-function SMODS.Sprite:new(name, top_lpath, path, px, py, type, frames)
+function BUTIL.Sprite:new(name, top_lpath, path, px, py, type, frames)
 	o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -54,15 +50,15 @@ function SMODS.Sprite:new(name, top_lpath, path, px, py, type, frames)
 	return o
 end
 
-function SMODS.Sprite:register()
-	if not SMODS.Sprites[self] then
-		table.insert(SMODS.Sprites, self)
+function BUTIL.Sprite:register()
+	if not BUTIL.Sprites[self] then
+		table.insert(BUTIL.Sprites, self)
 	end
 end
 
-function SMODS.injectSprites()
+function BUTIL.injectSprites()
 
-	for i, sprite in ipairs(SMODS.Sprites) do
+	for i, sprite in ipairs(BUTIL.Sprites) do
         local foundAndReplaced = false
 
 		if sprite.type == "animation_atli" then
@@ -154,26 +150,27 @@ function SMODS.injectSprites()
 
     sendDebugMessage("All the sprites have been loaded!")
 end
-
-gameset_render_settingsRef = Game.set_render_settings
-function Game:set_render_settings()
-    gameset_render_settingsRef(self)
-    SMODS.injectSprites()
-end
+render_settings_inject = [[
+    BUTIL.injectSprites()
+]]
 
 -- Allows Jokers to have custom atlases
-local set_spritesref = Card.set_sprites
-function Card:set_sprites(_center, _front)
-    set_spritesref(self, _center, _front);
-    if _center then 
-        if _center.set then
-            if (_center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher') and _center.atlas then
-                self.children.center.atlas = G.ASSET_ATLAS[(_center.atlas or (_center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher') and _center.set) or 'centers']
-                self.children.center:set_sprite_pos(_center.pos)
-            end
-        end
-    end
-end
+set_sprites_target = "elseif _center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher' then"
+set_sprites_replacment = "elseif (_center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher') and not _center.atlas then"
 
--- ----------------------------------------------
--- ------------MOD CORE API SPRITE END-----------
+table.insert(mods,
+    {
+        mod_id = "libsprite",
+        name = "LibSprite",
+        author = "JoStro (Based on Steamodded Core)"
+        enabled = true,
+        on_enable = function()
+            injectTail("game.lua", "Game:set_render_settings", render_settings_inject)
+            inject("card.lua", "Card:set_sprites", set_sprites_target:gsub("([^%w])", "%%%1"), set_sprites_replacement)
+        end,
+        on_disable = function()
+            inject("game.lua", "Game:set_render_settings", render_settings_inject:gsub("([^%w])", "%%%1"), "")
+            inject("card.lua", "Card:set_sprites", set_sprites_replacment:gsub("([^%w])", "%%%1"), set_sprites_target)
+        end,
+    }
+)
