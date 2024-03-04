@@ -1,6 +1,6 @@
 
 function getLibSprite() 
-    libSprite = {
+    return {
         addAtlas = function(name, path, px, py)
             fullPath = "\"resources/\"..self.GRAPHICS.texture_scaling..\"x/"..path.."\""
             entry = "{name = \""..name.."\", path = "..fullPath..",px="..px..",py="..py.."},"
