@@ -28,7 +28,7 @@ table.insert(mods,
         mod_id = "libsprite",
         name = "LibSprite",
         author = "JoStro",
-        version = "0.1",
+        version = "0.2",
         enabled = true,
         on_enable = function()
             inject("card.lua", "Card:set_sprites", set_sprites_target:gsub("([^%w])", "%%%1"), set_sprites_replacment)

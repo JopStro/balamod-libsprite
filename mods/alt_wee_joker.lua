@@ -8,7 +8,7 @@ table.insert(mods,
     mod_id = "unique_wee",
     name = "Unique Wee Joker",
     author = "JoStro (art by efhiii)",
-    version = "0.1",
+    version = "0.2",
     enabled = true,
     on_enable = function()
         entry = libSprite.addAtlas("Wee","wee.png",45,59)
