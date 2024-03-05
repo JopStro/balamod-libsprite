@@ -1,17 +1,20 @@
 
+fresh = false
 function getLibSprite() 
     return {
         addAtlas = function(name, path, px, py)
-            fullPath = "resources/"..G.SETTINGS.GRAPHICS.texture_scaling.."x/"..path
-            G.ASSET_ATLAS[name] = {}
-            G.ASSET_ATLAS[name].name = name
-            G.ASSET_ATLAS[name].image = love.graphics.newImage(fullPath, {mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling})
-            G.ASSET_ATLAS[name].px = px
-            G.ASSET_ATLAS[name].py = py
-            
+            fullPath = "\"textures/\"..self.SETTINGS.GRAPHICS.texture_scaling..\"x/"..path:gsub("([\\\"])","\\%1").."\""
+            entry = string.format("{name = \"%s\",path = %s,px=%d,py=%d},\n",
+                name:gsub("([\\\"])","\\%1"), fullPath, px, py
+            )
+            target = "self.asset_atli = {\n"
+            inject("game.lua", "Game:set_render_settings", target:gsub("([^%w])", "%%%1"), target..entry)
+            fresh = false
+            return entry
         end,
-        removeAtlas = function(name)
-            G.ASSET_ATLAS[name] = nil
+        removeAtlas = function(entry)
+            inject("game.lua", "Game:set_render_settings", entry:gsub("([^%w])", "%%%1"), "")
+            fresh = false
         end,
     }
 end
@@ -30,8 +33,14 @@ table.insert(mods,
         on_enable = function()
             inject("card.lua", "Card:set_sprites", set_sprites_target:gsub("([^%w])", "%%%1"), set_sprites_replacment)
         end,
-        -- on_disable = function()
-        --     inject("card.lua", "Card:set_sprites", set_sprites_replacment:gsub("([^%w])", "%%%1"), set_sprites_target)
-        -- end,
+        on_disable = function()
+            inject("card.lua", "Card:set_sprites", set_sprites_replacment:gsub("([^%w])", "%%%1"), set_sprites_target)
+        end,
+        on_post_update = function()
+            if not fresh then
+                G:set_render_settings()
+                fresh = true
+            end
+        end,
     }
 )
