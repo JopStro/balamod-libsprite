@@ -8,12 +8,12 @@ function getLibSprite()
                 name:gsub("([\\\"])","\\%1"), fullPath, px, py
             )
             target = "self.asset_atli = {\n"
-            inject("game.lua", "Game:set_render_settings", target:gsub("([^%w])", "%%%1"), target..entry)
+            inject("game.lua", "Game:set_render_settings", target, target..entry)
             fresh = false
             return entry
         end,
         removeAtlas = function(entry)
-            inject("game.lua", "Game:set_render_settings", entry:gsub("([^%w])", "%%%1"), "")
+            inject("game.lua", "Game:set_render_settings", entry, "")
             fresh = false
         end,
     }
@@ -31,10 +31,10 @@ table.insert(mods,
         version = "0.2",
         enabled = true,
         on_enable = function()
-            inject("card.lua", "Card:set_sprites", set_sprites_target:gsub("([^%w])", "%%%1"), set_sprites_replacment)
+            inject("card.lua", "Card:set_sprites", set_sprites_target, set_sprites_replacment)
         end,
         on_disable = function()
-            inject("card.lua", "Card:set_sprites", set_sprites_replacment:gsub("([^%w])", "%%%1"), set_sprites_target)
+            inject("card.lua", "Card:set_sprites", set_sprites_replacment, set_sprites_target)
         end,
         on_post_update = function()
             if not fresh then
