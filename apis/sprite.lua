@@ -1,5 +1,5 @@
 
-fresh = false
+local fresh = false
 function getLibSprite() 
     return {
         addAtlas = function(name, path, px, py)
@@ -19,9 +19,14 @@ function getLibSprite()
     }
 end
 
--- Allows Jokers to have custom atlases
-set_sprites_target = "elseif _center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher' then"
-set_sprites_replacment = "elseif (_center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher') and not _center.atlas then"
+local targets = {
+    "elseif _center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher' then",
+    "G.ASSET_ATLAS['Joker'], self.config.center.soul_pos",
+}
+local replacements = {
+    "elseif (_center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher') and not _center.atlas then",
+    "G.ASSET_ATLAS[_center.atlas or 'Joker'], self.config.center.soul_pos",
+}
 
 table.insert(mods,
     {
@@ -31,10 +36,16 @@ table.insert(mods,
         version = "0.2",
         enabled = true,
         on_enable = function()
-            inject("card.lua", "Card:set_sprites", set_sprites_target, set_sprites_replacment)
+            for i = 1, #targets do
+                sendDebugMessage("injecting "..i)
+                inject("card.lua", "Card:set_sprites", targets[i]:gsub("([^%w])","%%%1"), replacements[i])
+            end
+            sendDebugMessage(extractFunctionBody("card.lua","Card:set_sprites"))
         end,
         on_disable = function()
-            inject("card.lua", "Card:set_sprites", set_sprites_replacment, set_sprites_target)
+            for i = 1, #targets do
+                inject("card.lua", "Card:set_sprites", replacements[i]:gsub("([^%w])","%%%1"), targets[i])
+            end
         end,
         on_post_update = function()
             if not fresh then
