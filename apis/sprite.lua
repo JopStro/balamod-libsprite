@@ -40,7 +40,6 @@ table.insert(mods,
                 sendDebugMessage("injecting "..i)
                 inject("card.lua", "Card:set_sprites", targets[i]:gsub("([^%w])","%%%1"), replacements[i])
             end
-            sendDebugMessage(extractFunctionBody("card.lua","Card:set_sprites"))
         end,
         on_disable = function()
             for i = 1, #targets do
