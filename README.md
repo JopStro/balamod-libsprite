@@ -1,3 +1,6 @@
+# DEPRECATED VERSION
+Please use the version at [JopStro/BalatroMods](https://github.com/JopStro/BalatroMods/) instead
+
 # LibSprite for Balmod
 Balmod api for injecting custom atlases into balatro.
 
